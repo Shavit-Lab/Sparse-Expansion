@@ -1,0 +1,50 @@
+# We use python 3.10 and cuda 11.8
+# We only pin the versions of critical libraries (e.g. torch).
+
+# Pytorch
+torch==2.2.2
+
+# Huggingface transformers
+transformers==4.40.2
+accelerate
+sentencepiece
+datasets
+
+
+# Computational libraries
+pandas
+scipy
+scikit-learn
+
+# Visualization libraries
+matplotlib
+plotly
+
+# Experiment management
+wandb
+
+# Configuration parsing
+simple-parsing==0.1.4
+
+# Testing
+pytest
+
+# Misc utilities
+tqdm
+
+# Formatting, Linting, and Typechecking
+black[jupyter]
+isort
+
+# Utilities
+gpustat
+ipywidgets==7.7.3 # https://github.com/microsoft/vscode-jupyter/issues/11014
+jupyterlab
+
+#magic-wormhole for file transfer
+magic-wormhole
+
+#cudf
+--extra-index-url https://pypi.nvidia.com
+cudf-cu11==23.12.*
+cuml-cu11==23.12.*
