@@ -68,7 +68,7 @@ class SparseGPT:
         Losses = torch.zeros(self.rows, device=self.dev)
 
         damp = percdamp * torch.mean(torch.diag(H))
-        inc_damp = damp / 10
+        inc_damp = damp
         inc_count = 0
         diag = torch.arange(self.columns, device=self.dev)
         H[diag, diag] += damp
