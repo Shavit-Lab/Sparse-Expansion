@@ -47,7 +47,7 @@ def get_parser():
 def validate_args(args):
     # Ensure valid model_size for the selected model
     pythia_sizes = ['14M', '31M', '70M', '160M', '410M', '1B', '1.4B', '2.8B', '6.9B', '12B']
-    llama_sizes = ['7B', '8B', '13B']
+    llama_sizes = ['7B', '8B', '13B', '1.1B']
 
 
     if args.model == 'pythia' and args.model_size not in pythia_sizes:

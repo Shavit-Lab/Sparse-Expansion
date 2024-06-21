@@ -135,8 +135,11 @@ def get_pythia(model_size, cache_dir = None):
     return model
 
 def get_llama(model_size, cache_dir = None):
+
     if model_size == "8B":
         model_id = "meta-llama/Meta-Llama-3-8B"
+    elif model_size == "1.1B":
+        model_id = "TinyLlama/TinyLlama-1.1B-intermediate-step-1431k-3T"
     else:
         model_id = f"meta-llama/Llama-2-{model_size}-hf"
     if cache_dir is not None:

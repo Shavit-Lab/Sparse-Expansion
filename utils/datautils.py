@@ -107,6 +107,8 @@ def get_loaders(name, model_size, nsamples=128, seed=0, seqlen=2048, model='', c
         model_id = f"EleutherAI/pythia-{model_size}-deduped"
     elif model == "llama" and model_size =="8B":
         model_id = "meta-llama/Meta-Llama-3-8B"
+    elif model == "llama" and model_size == "1.1B":
+        model_id = "TinyLlama/TinyLlama-1.1B-intermediate-step-1431k-3T"
     elif model == "llama":
         model_id = f"meta-llama/Llama-2-7b-hf"
     else:
