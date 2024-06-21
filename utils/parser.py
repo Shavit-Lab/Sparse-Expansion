@@ -23,26 +23,27 @@ def get_parser():
 
     # Sparse expansion specific parameters group
     sparse_group = parser.add_argument_group('Sparse Expansion Specific Parameters Arguments')
-    sparse_group.add_argument('--model', choices=['llama', 'pythia'], required=True, help="Name of the model (llama/pythia)")
-    sparse_group.add_argument('--model_size', type=str, required=True, help="Size of the model")
+    sparse_group.add_argument('-m','--model', choices=['llama', 'pythia'], required=True, help="Name of the model (llama/pythia)")
+    sparse_group.add_argument('-ms','--model_size', type=str, required=True, help="Size of the model")
     # sparse_group.add_argument('--sparsity', type=float, required=True, help="Sparsity level (float)")
-    sparse_group.add_argument('--sparsity', type=sparsity_type, required=True, help="Sparsity level (float or N:M format)")
-    sparse_group.add_argument('--quantize', action='store_true', help="Whether to quantize the model")
-    sparse_group.add_argument('--bits', type=int, help="Number of bits for quantization (if quantize is true)")
+    sparse_group.add_argument('-s','--sparsity', type=sparsity_type, required=True, help="Sparsity level (float or N:M format)")
+    sparse_group.add_argument('-q','--quantize', action='store_true', help="Whether to quantize the model")
+    sparse_group.add_argument('-b','--bits', type=int, help="Number of bits for quantization (if quantize is true)")
+    sparse_group.add_argument('-v','--verbose', action='store_true', help="Print verbose logs")
 
     # Calibration dataset group
     calibration_group = parser.add_argument_group('Calibration Dataset Arguments')
-    calibration_group.add_argument('--dataset', choices=['wikitext2', 'c4'], required=True, help="Which dataset to use (wikitext2, c4)")
-    calibration_group.add_argument('--size', type=int, required=True, help="Size of the dataset in terms of number of sequences")
+    calibration_group.add_argument('-d','--dataset', choices=['wikitext2', 'c4'], required=True, help="Which dataset to use (wikitext2, c4)")
+    calibration_group.add_argument('-ds','--dataset-size', type=int, required=True, help="Size of the dataset in terms of number of sequences")
 
     # PCA reduction group
     pca_group = parser.add_argument_group('PCA Reduction Arguments')
-    pca_group.add_argument('--no_PCA', action='store_true', help="Do not perform PCA reduction")
-    pca_group.add_argument('--PCA_reduction_factor', type=int, help="PCA reduction factor (required if no_PCA is false)")
+    pca_group.add_argument('-npca','--no_PCA', action='store_true', help="Do not perform PCA reduction")
+    pca_group.add_argument('-pcrf','--PCA_reduction_factor', type=int, help="PCA reduction factor (required if no_PCA is false)")
 
     # KMeans group
     kmeans_group = parser.add_argument_group('Clustering Arguments')
-    kmeans_group.add_argument('--num_clusters', type=int, required=True, help="Number of clusters for KMeans")
+    kmeans_group.add_argument('-nc','--num_clusters', type=int, required=True, help="Number of clusters for KMeans")
 
     return parser
 
@@ -51,10 +52,14 @@ def validate_args(args):
     pythia_sizes = ['14M', '31M', '70M', '160M', '410M', '1B', '1.4B', '2.8B', '6.9B', '12B']
     llama_sizes = ['7B', '8B', '13B']
 
+
     if args.model == 'pythia' and args.model_size not in pythia_sizes:
         raise argparse.ArgumentTypeError(f"Invalid model_size for pythia. Choose from {pythia_sizes}")
     if args.model == 'llama' and args.model_size not in llama_sizes:
         raise argparse.ArgumentTypeError(f"Invalid model_size for llama. Choose from {llama_sizes}")
+    
+    # make model_size upper case
+    args.model_size = args.model_size.upper()
 
     # Ensure bits is provided if quantize is true
     if args.quantize and args.bits is None:
