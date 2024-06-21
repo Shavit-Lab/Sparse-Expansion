@@ -19,6 +19,7 @@ def make_and_apply_KMeans(inputs, n_clusters, verbose = False):
     )
     if verbose:
         tock = time.time()
+        print("KMeans model acquired")
         print("Time taken: ", tock - tick)
         unique, counts = np.unique(
             cp.asnumpy(kmeans_model.labels_), 
