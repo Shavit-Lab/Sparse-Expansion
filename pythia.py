@@ -74,9 +74,7 @@ def pythia_sequential(
         except ValueError:
             pass
     for i in range(testenc.numel() // CONTEXT_LENGTH):
-        batch = testenc[
-            :, (i * CONTEXT_LENGTH) : ((i + 1) * CONTEXT_LENGTH)
-        ].to(dev)
+        batch = testenc[:, (i*CONTEXT_LENGTH):((i+1)*CONTEXT_LENGTH)].to(dev)
         try:
             model(batch)
         except ValueError:
@@ -84,7 +82,6 @@ def pythia_sequential(
     
     layers[0] = layers[0].module
     layers[0] = layers[0].cpu()
-
     model.gpt_neox.embed_in = model.gpt_neox.embed_in.cpu()
     model.gpt_neox.emb_dropout = model.gpt_neox.emb_dropout.cpu()
     position_ids = cache["position_ids"]
@@ -99,9 +96,7 @@ def pythia_sequential(
     def add_batch(name, batch_number, subset, gpts):
         def tmp(_, inp, out):
             input_mask = cp.asnumpy(subset[name].kmeans_model.labels_)[
-                CONTEXT_LENGTH
-                * batch_number[0] : CONTEXT_LENGTH
-                * (batch_number[0] + 1)
+                CONTEXT_LENGTH*batch_number[0]:CONTEXT_LENGTH*(batch_number[0] + 1)
             ]
             for cluster in range(num_clusters):
                 cluster_mask = input_mask == cluster
@@ -220,7 +215,6 @@ def pythia_sequential(
         for name in gpts:
             for cluster in range(num_clusters):
                 if verbose: print(f"Cluster {cluster}")
-                
                 if quantize:
                     gpts[name][cluster].quantizer = Quantizer()
                     gpts[name][cluster].quantizer.configure(bits = bits,
@@ -228,7 +222,6 @@ def pythia_sequential(
                                                             sym = False,
                                                             mse = False,
                     )
-
                 if isinstance(sparsity, tuple):
                     gpts[name][cluster].fasterprune(
                         sparsity=0,
