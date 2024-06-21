@@ -120,15 +120,16 @@ def make_clustered(module, names, name="", num_clusters=1):
 
 def get_pythia(model_size, cache_dir = None):
     model_size = model_size.lower()
+    model_id = f"EleutherAI/pythia-{model_size}-deduped"
     if cache_dir is not None:
         model = GPTNeoXForCausalLM.from_pretrained(
-            f"EleutherAI/pythia-{model_size}-deduped",
+            f"{model_id}",
             revision="step143000",
             cache_dir=cache_dir,
         )
     else:
         model = GPTNeoXForCausalLM.from_pretrained(
-            f"EleutherAI/pythia-{model_size}-deduped",
+            f"{model_id}",
             revision="step143000",
         )
     return model
@@ -137,7 +138,7 @@ def get_llama(model_size, cache_dir = None):
     if model_size == "8B":
         model_id = "meta-llama/Meta-Llama-3-8B"
     else:
-        model_id = f"meta-llama/Meta-Llama-2-{model_size}-hf"
+        model_id = f"meta-llama/Llama-2-{model_size}-hf"
     if cache_dir is not None:
         model = AutoModelForCausalLM.from_pretrained(
             model_id,

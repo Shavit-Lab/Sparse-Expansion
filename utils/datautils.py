@@ -1,5 +1,4 @@
 import random
-
 import numpy as np
 import torch
 from datasets import load_dataset
@@ -10,19 +9,26 @@ def set_seed(seed):
     np.random.seed(seed)
     torch.random.manual_seed(seed)
 
-def get_tokenizer(model):
-    if "llama" in model.lower():
-        
-        tokenizer = LlamaTokenizer.from_pretrained(model, use_fast=False)
-        # fix for transformer 4.28.0.dev0 compatibility
+def get_tokenizer(model_id, cache_dir):
+    if "llama" in model_id.lower():
+        tokenizer = AutoTokenizer.from_pretrained(
+            model_id,
+            use_fast=False,
+            cache_dir=cache_dir
+        )
         if tokenizer.bos_token_id != 1 or tokenizer.eos_token_id != 2:
             try:
                 tokenizer.bos_token_id = 1
                 tokenizer.eos_token_id = 2
             except AttributeError:
                 pass
-    else:
-        tokenizer = AutoTokenizer.from_pretrained(model, use_fast=False)
+    elif "pythia" in model_id.lower():
+        tokenizer = AutoTokenizer.from_pretrained(
+            model_id,
+            revision="step143000",
+            cache_dir=cache_dir,
+        )
+
     return tokenizer
 
 
@@ -96,16 +102,17 @@ def get_c4(nsamples, seed, seqlen, model, tokenizer):
 
     return trainloader, valenc
 
-def get_loaders(name, nsamples=128, seed=0, seqlen=2048, model='', cache_dir=None):
-    if model.startswith('pythia'):
-        model_size = model.split('-')[1]
-        tokenizer = AutoTokenizer.from_pretrained(
-            f"EleutherAI/pythia-{model_size}-deduped",
-            revision="step143000",
-            cache_dir=cache_dir,
-        )
+def get_loaders(name, model_size, nsamples=128, seed=0, seqlen=2048, model='', cache_dir="~/.cache/"):
+    if model == "pythia":
+        model_id = f"EleutherAI/pythia-{model_size}-deduped"
+    elif model == "llama" and model_size =="8B":
+        model_id = "meta-llama/Meta-Llama-3-8B"
+    elif model == "llama":
+        model_id = f"meta-llama/Llama-2-7b-hf"
     else:
-        tokenizer = get_tokenizer(model)
+        raise ValueError(f"Unknown model {model}")
+    tokenizer = get_tokenizer(model_id, cache_dir)
+
     if 'wikitext2' in name:
         return get_wikitext2(nsamples, seed, seqlen, model, tokenizer)
     if 'ptb' in name:
