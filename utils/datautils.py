@@ -108,11 +108,14 @@ def get_loaders(name, model_size, nsamples=128, seed=0, seqlen=2048, model='', c
     elif model == "llama" and model_size =="8B":
         model_id = "meta-llama/Meta-Llama-3-8B"
     elif model == "llama" and model_size == "1.1B":
-        model_id = "TinyLlama/TinyLlama-1.1B-intermediate-step-1431k-3T"
-    elif model == "llama":
+        # use 7b tokenizer because 1.1B doesn't have it's own
         model_id = f"meta-llama/Llama-2-7b-hf"
+    elif model == "llama":
+        model_id = f"meta-llama/Llama-2-{model_size}-hf"
     else:
         raise ValueError(f"Unknown model {model}")
+    
+    print(f"Loading model {model_id}")
     tokenizer = get_tokenizer(model_id, cache_dir)
 
     if 'wikitext2' in name:
