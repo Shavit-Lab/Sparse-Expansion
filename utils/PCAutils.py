@@ -17,6 +17,7 @@ def make_and_apply_PCA(inputs, hidden_dim, reduction_factor, verbose = False):
     )
     if verbose:
         tock = time.time()
+        print("PCA model acquired")
         print("Time taken: ", tock - tick)
         print("Top 10 explained variance ratios: ", pca_model.explained_variance_ratio_[:10])
         print("Bottom 10 explained variance ratios: ", pca_model.explained_variance_ratio_[-10:])
