@@ -1,0 +1,25 @@
+# See https://setuptools.pypa.io/en/latest/userguide/pyproject_config.html
+[build-system]
+requires = ["setuptools", "setuptools-scm"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "Sparse-Expansion"
+description = "Sparse Expansion of LLMs"
+requires-python = ">=3.10"
+readme = "README.md"
+dynamic = ["version"]
+
+[tool.setuptools]
+packages = ["utils"]
+
+[tool.setuptools.package-dir]
+utils = "utils"
+
+[tool.black]
+# Line length 80 to makes it easier to have multiple files open side-by-side.
+line-length = 80
+
+[tool.isort]
+profile = "black"
+split_on_trailing_comma = "true"
