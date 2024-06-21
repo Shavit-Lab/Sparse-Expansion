@@ -2,6 +2,7 @@ import numpy as np
 import cupy as cp
 import torch
 import torch.nn as nn
+from transformers import AutoTokenizer, GPTNeoXForCausalLM, AutoModelForCausalLM
 
 class ClusteredLinear(nn.Module):
     def __init__(self, linear=None, num_clusters=1, perc=0.0):
@@ -116,3 +117,34 @@ def make_clustered(module, names, name="", num_clusters=1):
             name + "." + name1 if name != "" else name1,
             num_clusters=num_clusters,
         )
+
+def get_pythia(model_size, cache_dir = None):
+    model_size = model_size.lower()
+    if cache_dir is not None:
+        model = GPTNeoXForCausalLM.from_pretrained(
+            f"EleutherAI/pythia-{model_size}-deduped",
+            revision="step143000",
+            cache_dir=cache_dir,
+        )
+    else:
+        model = GPTNeoXForCausalLM.from_pretrained(
+            f"EleutherAI/pythia-{model_size}-deduped",
+            revision="step143000",
+        )
+    return model
+
+def get_llama(model_size, cache_dir = None):
+    if model_size == "8B":
+        model_id = "meta-llama/Meta-Llama-3-8B"
+    else:
+        model_id = f"meta-llama/Meta-Llama-2-{model_size}-hf"
+    if cache_dir is not None:
+        model = AutoModelForCausalLM.from_pretrained(
+            model_id,
+            cache_dir=cache_dir,
+        )
+    else:
+        model = AutoModelForCausalLM.from_pretrained(
+            model_id,
+        )
+    return model
