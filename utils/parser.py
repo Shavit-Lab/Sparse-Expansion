@@ -12,8 +12,11 @@ def sparsity_type(value):
     match = re.match(r'^(\d+):(\d+)$', value)
     if match:
         n, m = int(match.group(1)), int(match.group(2))
+        # print("Regex match", n,m)
         if n <= m:
-            return f"{n}:{m}"
+            return (n, m)
+        
+        
     raise argparse.ArgumentTypeError("Sparsity must be a float or in the format N:M where N and M are integers and N <= M")
 
 def get_parser():
