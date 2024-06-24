@@ -19,13 +19,13 @@ python main.py \
   --model [pythia or llama] \
   --model_size [supports all Pythia model sizes and Llama 2 7B and 13B as well as Llama 3 8B] \
   --sparsity [sparsity expressed as a float, or in N:M format as a tuple (N, M)] \
-  --quantize [whether or not to quantize, default False] \
-  --bits [number of bits to quantize to if quantize is True, otherwise ignored] \
-  --verbose [show more detailed progress] \
+  --quantize [if flag is set, quantize] \
+  --bits [number of bits to quantize to if quantize flag is set, otherwise ignored] \
+  --verbose [if flag is set, show more detailed progress] \
   --dataset [wikitext2 or c4, c4 is sometimes down so experiments were all conducted on wikitext2] \
   --dataset-size [number of calibration samples] \
-  --no_PCA [whether or not to skip the PCA step for further speedup, default False] \
-  --PCA_reduction_factor [degree of dimensionality reduction if no_PCA is False, otherwise ignored] \
+  --no_PCA [if flag is set, do not perform PCA] \
+  --PCA_reduction_factor [degree of dimensionality reduction if no_PCA is not set, otherwise ignored] \
   --num_clusters [number of clusters]
 ```
 For example, here is a command to evaluate a 50% sparse Pythia 12B model with 16 experts and no additional quantization: 
@@ -34,7 +34,7 @@ python main.py --model pythia --model_size 12B --sparsity 0.5 --dataset wikitext
 ```
 As another example, here is a command to evaluate a 2:4 sparse Llama 2 7B model with 16 experts and 4 bit quantization: 
 ```
-python main.py --model llama --model_size 7B --sparsity (2, 4) --quantize True --bits 4 --dataset wikitext2 --dataset-size 128 --num_clusters 16 --PCA_reduction_factor 32
+python main.py --model llama --model_size 7B --sparsity (2, 4) --quantize --bits 4 --dataset wikitext2 --dataset-size 128 --num_clusters 16 --PCA_reduction_factor 32
 ```
 ## Cite
 If you found our work useful, please cite our paper:
