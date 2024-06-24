@@ -13,6 +13,7 @@ from utils.modelutils import *
 from utils.PCAutils import *
 from utils.sparsegpt import *
 
+
 @torch.no_grad()
 def llama_sequential(
     model,
@@ -26,8 +27,8 @@ def llama_sequential(
     no_PCA,
     pca_reduction_factor,
     num_clusters,
-    verbose = False,
-    ):
+    verbose=False,
+):
     print("Starting")
     print("Sparsity", sparsity)
 
@@ -75,7 +76,9 @@ def llama_sequential(
         except ValueError:
             pass
     for i in range(testenc.numel() // CONTEXT_LENGTH):
-        batch = testenc[:, (i*CONTEXT_LENGTH):((i+1)*CONTEXT_LENGTH)].to(dev)
+        batch = testenc[
+            :, (i * CONTEXT_LENGTH) : ((i + 1) * CONTEXT_LENGTH)
+        ].to(dev)
         try:
             model(batch)
         except ValueError:
@@ -99,7 +102,9 @@ def llama_sequential(
     def add_batch(name, batch_number, subset, gpts):
         def tmp(_, inp, out):
             input_mask = cp.asnumpy(subset[name].kmeans_model.labels_)[
-                CONTEXT_LENGTH*batch_number[0]:CONTEXT_LENGTH*(batch_number[0]+1)
+                CONTEXT_LENGTH
+                * batch_number[0] : CONTEXT_LENGTH
+                * (batch_number[0] + 1)
             ]
             for cluster in range(num_clusters):
                 cluster_mask = input_mask == cluster
@@ -114,16 +119,18 @@ def llama_sequential(
             batch_number[0] += 1
 
         return tmp
-    
+
     for i in tqdm(range(len(layers))):
-        if verbose: print(f"Working on layer {i}")
+        if verbose:
+            print(f"Working on layer {i}")
         layer = layers[i].to(dev)
         subset = find_layers(layer, layers=[ClusteredLinear])
 
-        if verbose: print(f"Working on gate and up proj")
+        if verbose:
+            print(f"Working on gate and up proj")
         batch_number = [0]
         train_inputs = torch.empty(
-            (dataloader_len, CONTEXT_LENGTH, hidden_dim), 
+            (dataloader_len, CONTEXT_LENGTH, hidden_dim),
             device=dev,
         )
 
@@ -135,10 +142,14 @@ def llama_sequential(
                         get_kmeans_input(name, batch_number, train_inputs)
                     )
                 )
-    
+
         for j in range(len(dataloader)):
-            layer(inps[j], attention_mask=attention_mask, position_ids=position_ids)
-    
+            layer(
+                inps[j],
+                attention_mask=attention_mask,
+                position_ids=position_ids,
+            )
+
         for h in handles:
             h.remove()
 
@@ -151,28 +162,31 @@ def llama_sequential(
         up_gate_clustering_inputs = train_inputs
 
         if not no_PCA:
-            pca_up_gate_clustering, transformed_up_gate_inputs = make_and_apply_PCA(
-                up_gate_clustering_inputs, 
-                hidden_dim, 
-                pca_reduction_factor, 
-                verbose,
+            pca_up_gate_clustering, transformed_up_gate_inputs = (
+                make_and_apply_PCA(
+                    up_gate_clustering_inputs,
+                    hidden_dim,
+                    pca_reduction_factor,
+                    verbose,
+                )
             )
         else:
             pca_up_gate_clustering = None
             transformed_up_gate_inputs = up_gate_clustering_inputs.reshape(
-                -1, 
+                -1,
                 up_gate_clustering_inputs.shape[-1],
             )
-            if verbose: print("PCA skipped")
-        
+            if verbose:
+                print("PCA skipped")
+
         del up_gate_clustering_inputs
         del train_inputs
         gc.collect()
         torch.cuda.empty_cache()
 
         kmeans_up_gate = make_and_apply_KMeans(
-            transformed_up_gate_inputs, 
-            num_clusters, 
+            transformed_up_gate_inputs,
+            num_clusters,
             verbose,
         )
 
@@ -187,9 +201,11 @@ def llama_sequential(
                 subset[name].kmeans_model = kmeans_up_gate
                 subset[name].pca_model = pca_up_gate_clustering
                 for cluster in range(num_clusters):
-                    subset[name].add_layer(copy.deepcopy(subset[name].layers[0]))
+                    subset[name].add_layer(
+                        copy.deepcopy(subset[name].layers[0])
+                    )
                     gpts[name][cluster] = SparseGPT(subset[name].layers[-1])
-        
+
         batch_number_up = [0]
         batch_number_gate = [0]
 
@@ -207,10 +223,14 @@ def llama_sequential(
                         add_batch(name, batch_number_up, subset, gpts)
                     )
                 )
-        
+
         for j in range(len(dataloader)):
-            layer(inps[j], attention_mask=attention_mask, position_ids=position_ids)
-    
+            layer(
+                inps[j],
+                attention_mask=attention_mask,
+                position_ids=position_ids,
+            )
+
         for h in handles:
             h.remove()
 
@@ -220,16 +240,19 @@ def llama_sequential(
         for name in subset:
             subset[name].reset_counter()
 
-        if verbose: print(f"Pruning")
+        if verbose:
+            print(f"Pruning")
         for name in gpts:
             for cluster in range(num_clusters):
-                if verbose: print(f"Cluster {cluster}")
+                if verbose:
+                    print(f"Cluster {cluster}")
                 if quantize:
                     gpts[name][cluster].quantizer = Quantizer()
-                    gpts[name][cluster].quantizer.configure(bits = bits,
-                                                            perchannel = True,
-                                                            sym = False,
-                                                            mse = False,
+                    gpts[name][cluster].quantizer.configure(
+                        bits=bits,
+                        perchannel=True,
+                        sym=False,
+                        mse=False,
                     )
                 if isinstance(sparsity, tuple):
                     gpts[name][cluster].fasterprune(
@@ -240,7 +263,7 @@ def llama_sequential(
                     )
                 else:
                     gpts[name][cluster].fasterprune(
-                        sparsity=sparsity, 
+                        sparsity=sparsity,
                         percdamp=0.01,
                     )
 
@@ -248,17 +271,19 @@ def llama_sequential(
                 del gpts[name][cluster]
                 gc.collect()
                 torch.cuda.empty_cache()
-        
-        if verbose: print("Finished pruning up and gate proj")
+
+        if verbose:
+            print("Finished pruning up and gate proj")
         del gpts
 
         gc.collect()
         torch.cuda.empty_cache()
 
-        if verbose: print("Working on down proj")
+        if verbose:
+            print("Working on down proj")
         batch_number = [0]
         train_inputs = torch.empty(
-            (dataloader_len, CONTEXT_LENGTH, intermediate_dim), 
+            (dataloader_len, CONTEXT_LENGTH, intermediate_dim),
             device=dev,
         )
         handles = []
@@ -270,8 +295,12 @@ def llama_sequential(
                     )
                 )
         for j in range(len(dataloader)):
-            layer(inps[j], attention_mask=attention_mask, position_ids=position_ids)
-        
+            layer(
+                inps[j],
+                attention_mask=attention_mask,
+                position_ids=position_ids,
+            )
+
         for h in handles:
             h.remove()
 
@@ -280,32 +309,33 @@ def llama_sequential(
 
         for name in subset:
             subset[name].reset_counter()
-        
+
         down_clustering_inputs = train_inputs
 
         if not no_PCA:
             pca_down_clustering, transformed_down_inputs = make_and_apply_PCA(
-                down_clustering_inputs, 
-                intermediate_dim, 
-                pca_reduction_factor, 
+                down_clustering_inputs,
+                intermediate_dim,
+                pca_reduction_factor,
                 verbose,
             )
         else:
             pca_down_clustering = None
             transformed_down_inputs = down_clustering_inputs.reshape(
-                -1, 
+                -1,
                 down_clustering_inputs.shape[-1],
             )
-            if verbose: print("PCA skipped")
-        
+            if verbose:
+                print("PCA skipped")
+
         del down_clustering_inputs
         del train_inputs
         gc.collect()
         torch.cuda.empty_cache()
 
         kmeans_down = make_and_apply_KMeans(
-            transformed_down_inputs, 
-            num_clusters, 
+            transformed_down_inputs,
+            num_clusters,
             verbose,
         )
 
@@ -320,7 +350,9 @@ def llama_sequential(
                 subset[name].kmeans_model = kmeans_down
                 subset[name].pca_model = pca_down_clustering
                 for cluster in range(num_clusters):
-                    subset[name].add_layer(copy.deepcopy(subset[name].layers[0]))
+                    subset[name].add_layer(
+                        copy.deepcopy(subset[name].layers[0])
+                    )
                     gpts[name][cluster] = SparseGPT(subset[name].layers[-1])
 
         batch_number_down = [0]
@@ -332,9 +364,13 @@ def llama_sequential(
                     add_batch(name, batch_number_down, subset, gpts)
                 )
             )
-        
+
         for j in range(len(dataloader)):
-            layer(inps[j], attention_mask=attention_mask, position_ids=position_ids)
+            layer(
+                inps[j],
+                attention_mask=attention_mask,
+                position_ids=position_ids,
+            )
 
         for h in handles:
             h.remove()
@@ -345,16 +381,19 @@ def llama_sequential(
         for name in subset:
             subset[name].reset_counter()
 
-        if verbose: print(f"Pruning")
+        if verbose:
+            print(f"Pruning")
         for name in gpts:
             for cluster in range(num_clusters):
-                if verbose: print(f"Cluster {cluster}")
+                if verbose:
+                    print(f"Cluster {cluster}")
                 if quantize:
                     gpts[name][cluster].quantizer = Quantizer()
-                    gpts[name][cluster].quantizer.configure(bits = bits,
-                                                            perchannel = True,
-                                                            sym = False,
-                                                            mse = False,
+                    gpts[name][cluster].quantizer.configure(
+                        bits=bits,
+                        perchannel=True,
+                        sym=False,
+                        mse=False,
                     )
                 if isinstance(sparsity, tuple):
                     gpts[name][cluster].fasterprune(
@@ -365,7 +404,7 @@ def llama_sequential(
                     )
                 else:
                     gpts[name][cluster].fasterprune(
-                        sparsity=sparsity, 
+                        sparsity=sparsity,
                         percdamp=0.01,
                     )
 
@@ -374,7 +413,8 @@ def llama_sequential(
                 gc.collect()
                 torch.cuda.empty_cache()
 
-        if verbose: print("Finished pruning down proj")
+        if verbose:
+            print("Finished pruning down proj")
         del gpts
 
         gc.collect()
@@ -383,18 +423,22 @@ def llama_sequential(
         for name in subset:
             subset[name].reset_counter()
             subset[name].mode = "train"
-        
+
         if verbose:
             print("Starting training run")
             tick = time.time()
-        
+
         for j in range(len(dataloader)):
-            inps[j] = layer(inps[j], attention_mask=attention_mask, position_ids=position_ids)[0]
+            inps[j] = layer(
+                inps[j],
+                attention_mask=attention_mask,
+                position_ids=position_ids,
+            )[0]
 
         if verbose:
             tock = time.time()
             print(f"Time taken to train layer: {tock - tick} seconds")
-        
+
         gc.collect()
         torch.cuda.empty_cache()
 
@@ -407,7 +451,11 @@ def llama_sequential(
             tick = time.time()
 
         for j in range(len(dataloader), len(inps)):
-            inps[j] = layer(inps[j],attention_mask=attention_mask, position_ids=position_ids)[0]
+            inps[j] = layer(
+                inps[j],
+                attention_mask=attention_mask,
+                position_ids=position_ids,
+            )[0]
 
         if verbose:
             tock = time.time()
@@ -418,7 +466,7 @@ def llama_sequential(
 
         for name in subset:
             subset[name].reset_counter()
-        
+
         if len(subset) != 0:
             for name in subset:
                 while len(subset[name].layers) > 1:
@@ -433,7 +481,8 @@ def llama_sequential(
         gc.collect()
         torch.cuda.empty_cache()
 
-        if verbose: print(f"Done with layer {i}")
+        if verbose:
+            print(f"Done with layer {i}")
 
     if model.model.norm is not None:
         model.model.norm = model.model.norm.to(dev)
@@ -448,9 +497,13 @@ def llama_sequential(
         lm_logits = model.lm_head(hidden_states)
         shift_logits = lm_logits[:, :-1, :].contiguous()
         j = i - len(dataloader)
-        shift_labels = testenc[:, (j*CONTEXT_LENGTH):((j+1)*CONTEXT_LENGTH)][:, 1:]
+        shift_labels = testenc[
+            :, (j * CONTEXT_LENGTH) : ((j + 1) * CONTEXT_LENGTH)
+        ][:, 1:]
         loss_fct = nn.CrossEntropyLoss()
-        loss = loss_fct(shift_logits.view(-1, shift_logits.size(-1)), shift_labels.view(-1))
+        loss = loss_fct(
+            shift_logits.view(-1, shift_logits.size(-1)), shift_labels.view(-1)
+        )
         neg_log_likelihood = loss.float() * CONTEXT_LENGTH
         nlls.append(neg_log_likelihood)
     mean_nll = torch.stack(nlls).sum() / (len(nlls) * CONTEXT_LENGTH)

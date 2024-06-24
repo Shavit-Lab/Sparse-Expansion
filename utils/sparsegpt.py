@@ -6,7 +6,7 @@ import transformers
 from utils.quant import *
 
 
-DEBUG = False 
+DEBUG = False
 
 torch.backends.cuda.matmul.allow_tf32 = False
 torch.backends.cudnn.allow_tf32 = False
@@ -34,7 +34,9 @@ class SparseGPT:
         if len(inp.shape) == 2:
             inp = inp.unsqueeze(0)
         tmp = inp.shape[0]
-        if isinstance(self.layer, nn.Linear) or isinstance(self.layer, transformers.Conv1D):
+        if isinstance(self.layer, nn.Linear) or isinstance(
+            self.layer, transformers.Conv1D
+        ):
             if len(inp.shape) == 3:
                 inp = inp.reshape((-1, inp.shape[-1]))
             inp = inp.t()
@@ -44,7 +46,7 @@ class SparseGPT:
         self.H += inp.matmul(inp.t())
 
     def fasterprune(
-        self, sparsity, prunen=0, prunem=0, blocksize=128, percdamp=.01
+        self, sparsity, prunen=0, prunem=0, blocksize=128, percdamp=0.01
     ):
         W = self.layer.weight.data.clone()
         if isinstance(self.layer, nn.Conv2d):
@@ -53,7 +55,7 @@ class SparseGPT:
             W = W.t()
         W = W.float()
 
-        if hasattr(self, 'quantizer'):
+        if hasattr(self, "quantizer"):
             if not self.quantizer.ready():
                 self.quantizer.find_params(W, weight=True)
 
@@ -70,7 +72,7 @@ class SparseGPT:
         inc_count = 0
         diag = torch.arange(self.columns, device=self.dev)
         H[diag, diag] += damp
-        
+
         needs_more_damping = True
 
         while needs_more_damping:
@@ -112,12 +114,14 @@ class SparseGPT:
             Losses1 = torch.zeros_like(W1)
             Hinv1 = Hinv[i1:i2, i1:i2]
 
-            if prunen == 0: 
+            if prunen == 0:
                 if mask is not None:
                     mask1 = mask[:, i1:i2]
                 else:
-                    tmp = W1 ** 2 / (torch.diag(Hinv1).reshape((1, -1))) ** 2
-                    thresh = torch.sort(tmp.flatten())[0][int(tmp.numel() * sparsity)]
+                    tmp = W1**2 / (torch.diag(Hinv1).reshape((1, -1))) ** 2
+                    thresh = torch.sort(tmp.flatten())[0][
+                        int(tmp.numel() * sparsity)
+                    ]
                     mask1 = tmp <= thresh
             else:
                 mask1 = torch.zeros_like(W1) == 1
@@ -127,19 +131,30 @@ class SparseGPT:
                 d = Hinv1[i, i]
 
                 if prunen != 0 and i % prunem == 0:
-                    tmp = W1[:, i:(i + prunem)] ** 2 / (torch.diag(Hinv1)[i:(i + prunem)].reshape((1, -1))) ** 2
-                    mask1.scatter_(1, i + torch.topk(tmp, prunen, dim=1, largest=False)[1], True)
+                    tmp = (
+                        W1[:, i : (i + prunem)] ** 2
+                        / (torch.diag(Hinv1)[i : (i + prunem)].reshape((1, -1)))
+                        ** 2
+                    )
+                    mask1.scatter_(
+                        1,
+                        i + torch.topk(tmp, prunen, dim=1, largest=False)[1],
+                        True,
+                    )
 
                 q = w.clone()
                 q[mask1[:, i]] = 0
 
-                if hasattr(self, 'quantizer'):
+                if hasattr(self, "quantizer"):
                     q = quantize(
-                        q.unsqueeze(1), self.quantizer.scale, self.quantizer.zero, self.quantizer.maxq
+                        q.unsqueeze(1),
+                        self.quantizer.scale,
+                        self.quantizer.zero,
+                        self.quantizer.maxq,
                     ).flatten()
 
                 Q1[:, i] = q
-                Losses1[:, i] = (w - q) ** 2 / d ** 2
+                Losses1[:, i] = (w - q) ** 2 / d**2
 
                 err1 = (w - q) / d
                 W1[:, i:] -= err1.unsqueeze(1).matmul(Hinv1[i, i:].unsqueeze(0))
@@ -160,7 +175,9 @@ class SparseGPT:
 
         if isinstance(self.layer, transformers.Conv1D):
             W = W.t()
-        self.layer.weight.data = W.reshape(self.layer.weight.shape).to(self.layer.weight.data.dtype)
+        self.layer.weight.data = W.reshape(self.layer.weight.shape).to(
+            self.layer.weight.data.dtype
+        )
         if DEBUG:
             print(torch.sum((self.layer(self.inp1) - self.out1) ** 2))
 
