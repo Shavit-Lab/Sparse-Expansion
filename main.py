@@ -9,6 +9,8 @@ def main():
     args = parser.parse_args()
     args_parser.validate_args(args)
 
+    # return 0
+
     # seqlen is 4096 if args.model is llama and args.model_size == 8B else 2048
     if args.model == 'llama':
         CONTEXT_LENGTH = 4096
@@ -38,7 +40,7 @@ def main():
         model.seqlen = CONTEXT_LENGTH
         from llama import llama_sequential
         
-        llama_sequential(
+        mean_nll, ppl = llama_sequential(
             model,
             args.sparsity,
             args.quantize,
@@ -58,7 +60,7 @@ def main():
                            cache_dir="/storage2/projects/input-clustering/models/Pythia")
         model.seqlen = CONTEXT_LENGTH
         from pythia import pythia_sequential
-        pythia_sequential(
+        mean_nll, ppl = pythia_sequential(
             model,
             args.sparsity,
             args.quantize,
@@ -72,6 +74,8 @@ def main():
             args.num_clusters,
             args.verbose
         )
+
+    print(f"Mean NLL: {mean_nll}, PPL: {ppl}")
     
     
 if __name__ == "__main__":
