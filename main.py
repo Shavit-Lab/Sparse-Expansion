@@ -10,7 +10,7 @@ def main():
     args_parser.validate_args(args)
 
     # seqlen is 4096 if args.model is llama and args.model_size == 8B else 2048
-    if args.model == 'llama' and args.model_size == '8B':
+    if args.model == 'llama':
         CONTEXT_LENGTH = 4096
     else:
         CONTEXT_LENGTH = 2048
