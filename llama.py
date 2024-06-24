@@ -29,6 +29,7 @@ def llama_sequential(
     verbose = False,
     ):
     print("Starting")
+    print("Sparsity", sparsity)
 
     testenc = testenc.input_ids
     hidden_dim = model.config.hidden_size
@@ -53,7 +54,7 @@ def llama_sequential(
 
     inps = []
 
-    cache = {"i": 0, "attention_mask": None}
+    cache = {"i": 0, "attention_mask": None, "position_ids": None}
 
     class Catcher(nn.Module):
         def __init__(self, module):
@@ -64,6 +65,7 @@ def llama_sequential(
             inps.append(inp)
             cache["i"] += 1
             cache["attention_mask"] = kwargs["attention_mask"]
+            cache["position_ids"] = kwargs["position_ids"]
             raise ValueError
 
     layers[0] = Catcher(layers[0])
@@ -85,6 +87,7 @@ def llama_sequential(
     model.model.norm = model.model.norm.cpu()
     torch.cuda.empty_cache()
     attention_mask = cache["attention_mask"]
+    position_ids = cache["position_ids"]
 
     def get_kmeans_input(name, batch_number, train_inputs):
         def tmp(_, inp, out):
@@ -134,7 +137,7 @@ def llama_sequential(
                 )
     
         for j in range(len(dataloader)):
-            layer(inps[j], attention_mask=attention_mask)
+            layer(inps[j], attention_mask=attention_mask, position_ids=position_ids)
     
         for h in handles:
             h.remove()
@@ -206,7 +209,7 @@ def llama_sequential(
                 )
         
         for j in range(len(dataloader)):
-            layer(inps[j], attention_mask=attention_mask)
+            layer(inps[j], attention_mask=attention_mask, position_ids=position_ids)
     
         for h in handles:
             h.remove()
@@ -267,7 +270,7 @@ def llama_sequential(
                     )
                 )
         for j in range(len(dataloader)):
-            layer(inps[j], attention_mask=attention_mask)
+            layer(inps[j], attention_mask=attention_mask, position_ids=position_ids)
         
         for h in handles:
             h.remove()
@@ -331,7 +334,7 @@ def llama_sequential(
             )
         
         for j in range(len(dataloader)):
-            layer(inps[j], attention_mask=attention_mask)
+            layer(inps[j], attention_mask=attention_mask, position_ids=position_ids)
 
         for h in handles:
             h.remove()
@@ -386,7 +389,7 @@ def llama_sequential(
             tick = time.time()
         
         for j in range(len(dataloader)):
-            inps[j] = layer(inps[j], attention_mask=attention_mask)[0]
+            inps[j] = layer(inps[j], attention_mask=attention_mask, position_ids=position_ids)[0]
 
         if verbose:
             tock = time.time()
@@ -404,7 +407,7 @@ def llama_sequential(
             tick = time.time()
 
         for j in range(len(dataloader), len(inps)):
-            inps[j] = layer(inps[j],attention_mask=attention_mask)[0]
+            inps[j] = layer(inps[j],attention_mask=attention_mask, position_ids=position_ids)[0]
 
         if verbose:
             tock = time.time()

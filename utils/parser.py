@@ -26,10 +26,12 @@ def get_parser():
     sparse_group = parser.add_argument_group('Sparse Expansion Specific Parameters Arguments')
     sparse_group.add_argument('-m','--model', choices=['llama', 'pythia'], required=True, help="Name of the model (llama/pythia)")
     sparse_group.add_argument('-ms','--model_size', type=str, required=True, help="Size of the model")
+    sparse_group.add_argument('-cd','--cache_dir', type=str, default="storage", help="Cache directory for the model")
     sparse_group.add_argument('-s','--sparsity', type=sparsity_type, required=True, help="Sparsity level (float or N:M format)")
     sparse_group.add_argument('-q','--quantize', action='store_true', help="Whether to quantize the model")
     sparse_group.add_argument('-b','--bits', type=int, help="Number of bits for quantization (if quantize is true)")
     sparse_group.add_argument('-v','--verbose', action='store_true', help="Print verbose logs")
+    
 
     # Calibration dataset group
     calibration_group = parser.add_argument_group('Calibration Dataset Arguments')

@@ -30,6 +30,7 @@ def pythia_sequential(
     verbose = False,
     ):
     print("Starting")
+    print("Sparsity", sparsity)
 
     testenc = testenc.input_ids
     hidden_dim = model.config.hidden_size

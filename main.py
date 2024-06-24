@@ -9,9 +9,7 @@ def main():
     args = parser.parse_args()
     args_parser.validate_args(args)
 
-    # return 0
-
-    # seqlen is 4096 if args.model is llama and args.model_size == 8B else 2048
+    # seqlen is 4096 for llama models and 2048 for pythia models
     if args.model == 'llama':
         CONTEXT_LENGTH = 4096
     else:
@@ -20,8 +18,7 @@ def main():
     dataloader, testloader = get_loaders(
         args.dataset,args.model_size, args.dataset_size, seed=0, 
         model=args.model, seqlen=CONTEXT_LENGTH,
-        # cache_dir="/storage2/projects/input-clustering/models/Pythia"
-        cache_dir="/storage2/projects/input-clustering/models/llama/llama-chkp"
+        cache_dir=args.cache_dir
     )
 
     assert len(dataloader) == args.dataset_size, "Dataset size mismatch!"
@@ -36,7 +33,7 @@ def main():
 
     if args.model == 'llama':
         model = get_llama(args.model_size,
-                          cache_dir="/storage2/projects/input-clustering/models/llama/llama-chkp")
+                          cache_dir=args.cache_dir)
         model.seqlen = CONTEXT_LENGTH
         from llama import llama_sequential
         
@@ -57,7 +54,7 @@ def main():
     
     elif args.model == 'pythia':
         model = get_pythia(args.model_size,
-                           cache_dir="/storage2/projects/input-clustering/models/Pythia")
+                           cache_dir=args.cache_dir)
         model.seqlen = CONTEXT_LENGTH
         from pythia import pythia_sequential
         mean_nll, ppl = pythia_sequential(
