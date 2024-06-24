@@ -18,6 +18,7 @@ To evaluate the performance of Sparse Expansion models in terms of perplexity, t
 python main.py \
   --model [pythia or llama] \
   --model_size [supports all Pythia model sizes and Llama 2 7B and 13B as well as Llama 3 8B] \
+  --cache_dir [cache directory] \
   --sparsity [sparsity expressed as a float, or in N:M format as a tuple (N, M)] \
   --quantize [if flag is set, quantize] \
   --bits [number of bits to quantize to if quantize flag is set, otherwise ignored] \
