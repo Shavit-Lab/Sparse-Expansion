@@ -22,6 +22,12 @@ micromamba activate sparse-expansion
 pip install -r requirements.txt
 pip install -e .
 ```
+## Sparse Expansion Process 
+
+![Alt text](assets/Sparse_Expansion.png)
+One-shot expert creation process of Sparse Expansion and inference process in an FFN block.
+
+
 
 ## Example Usage
 To evaluate the performance of Sparse Expansion models in terms of perplexity, the following command can be run:
@@ -48,6 +54,10 @@ As another example, here is a command to evaluate a 2:4 sparse Llama 2 7B model 
 ```
 python main.py --model llama --model_size 7B --sparsity (2, 4) --quantize --bits 4 --dataset wikitext2 --dataset-size 128 --num_clusters 16 --PCA_reduction_factor 32
 ```
+## Neuronal Disentanglement
+![Alt text](assets/dense_h_to_4h_cluster_sparse_distribution_neuron_2402_layer_1.png)
+Modeling recovery with more experts. The sparse computation output distribution (red) matches the dense one (blue) better with more clusters. Sparsity is set to 90\% for each expert. WD represents the Wasserstein distance between the sparse output distribution and the dense distribution. RI represents relative improvement of Sparse Expansion ($n \geq 1$ clusters) over baseline SparseGPT ($n = 1$ cluster).
+
 ## Cite
 If you found our work useful, please cite our paper:
 ```
