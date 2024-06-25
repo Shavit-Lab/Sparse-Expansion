@@ -10,6 +10,8 @@ Here we include the code for our paper [Sparse Expansion and Neuronal Disentangl
 * cuml-cu11==23.12.*
 * datasets
 
+Notably, cuML seems to perform most stably on CUDA 11, so we used the cuML packages for that version.
+
 ## Installation
 We use micromamba to create our environment, see here: [Micromamba](https://mamba.readthedocs.io/en/latest/installation/micromamba-installation.html).
 ```
@@ -20,8 +22,6 @@ micromamba activate sparse-expansion
 pip install -r requirements.txt
 pip install -e .
 ```
-
-Notably, cuML seems to perform most stably on CUDA 11, so we used the cuML packages for that version.
 
 ## Example Usage
 To evaluate the performance of Sparse Expansion models in terms of perplexity, the following command can be run:
