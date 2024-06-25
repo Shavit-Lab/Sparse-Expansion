@@ -1,6 +1,9 @@
 # Sparse Expansion
 Here we include the code for our paper [Sparse Expansion and Neuronal Disentanglement](https://arxiv.org/abs/2405.15756). The code allows for the creation and evaluation of Sparse Expansion models in terms of overall perplexity.
 
+![Sparse Expansion process](assets/Sparse_Expansion.png)
+*One-shot expert creation process and inference process of Sparse Expansion in an FFN block.*
+
 ## Requirements
 * python==3.10
 * cuda==11.8
@@ -13,7 +16,7 @@ Here we include the code for our paper [Sparse Expansion and Neuronal Disentangl
 Notably, cuML seems to perform most stably on CUDA 11, so we used the cuML packages for that version.
 
 ## Installation
-We use micromamba to create our environment, see here: [Micromamba](https://mamba.readthedocs.io/en/latest/installation/micromamba-installation.html).
+We use Micromamba to create our environment, see here: [Micromamba](https://mamba.readthedocs.io/en/latest/installation/micromamba-installation.html).
 ```
 git clone https://github.com/Shavit-Lab/Sparse-Expansion.git
 cd Sparse-Expansion
@@ -22,10 +25,8 @@ micromamba activate sparse-expansion
 pip install -r requirements.txt
 pip install -e .
 ```
-## Sparse Expansion Process 
 
-![Alt text](assets/Sparse_Expansion.png)
-One-shot expert creation process of Sparse Expansion and inference process in an FFN block.
+
 
 
 
@@ -55,8 +56,8 @@ As another example, here is a command to evaluate a 2:4 sparse Llama 2 7B model 
 python main.py --model llama --model_size 7B --sparsity (2, 4) --quantize --bits 4 --dataset wikitext2 --dataset-size 128 --num_clusters 16 --PCA_reduction_factor 32
 ```
 ## Neuronal Disentanglement
-![Alt text](assets/dense_h_to_4h_cluster_sparse_distribution_neuron_2402_layer_1.png)
-Modeling recovery with more experts. The sparse computation output distribution (red) matches the dense one (blue) better with more clusters. Sparsity is set to 90\% for each expert. WD represents the Wasserstein distance between the sparse output distribution and the dense distribution. RI represents relative improvement of Sparse Expansion ($n \geq 1$ clusters) over baseline SparseGPT ($n = 1$ cluster).
+![Saving neurons through SE in Pythia 1.4B](assets/dense_h_to_4h_cluster_sparse_distribution_neuron_2402_layer_1.png)
+*Modeling recovery with more experts in a neuron from Pythia 1.4B. The sparse computation output distribution (red) matches the dense one (blue) better with more clusters. Sparsity is set to 90\% for each expert. WD represents the Wasserstein distance between the sparse output distribution and the dense distribution. RI represents relative improvement of Sparse Expansion ($n \geq 1$ clusters) over baseline SparseGPT ($n = 1$ cluster).*
 
 ## Cite
 If you found our work useful, please cite our paper:
