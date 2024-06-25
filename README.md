@@ -10,6 +10,17 @@ Here we include the code for our paper [Sparse Expansion and Neuronal Disentangl
 * cuml-cu11==23.12.*
 * datasets
 
+## Installation
+We use micromamba to create our environment, see here: [Micromamba](https://mamba.readthedocs.io/en/latest/installation/micromamba-installation.html).
+```
+git clone https://github.com/Shavit-Lab/Sparse-Expansion.git
+cd Sparse-Expansion
+micromamba create -n sparse-expansion python=3.10
+micromamba activate sparse-expansion
+pip install -r requirements.txt
+pip install -e .
+```
+
 Notably, cuML seems to perform most stably on CUDA 11, so we used the cuML packages for that version.
 
 ## Example Usage
