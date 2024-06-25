@@ -57,7 +57,7 @@ python main.py --model llama --model_size 7B --sparsity (2, 4) --quantize --bits
 ```
 ## Neuronal Disentanglement
 ![Saving neurons through SE in Pythia 1.4B](assets/dense_h_to_4h_cluster_sparse_distribution_neuron_2402_layer_1.png)
-*Modeling recovery with more experts in a neuron from Pythia 1.4B. The sparse computation output distribution (red) matches the dense one (blue) better with more clusters. Sparsity is set to 90\% for each expert. WD represents the Wasserstein distance between the sparse output distribution and the dense distribution. RI represents relative improvement of Sparse Expansion ($n \geq 1$ clusters) over baseline SparseGPT ($n = 1$ cluster).*
+*Modeling recovery with more experts in a neuron from Pythia 1.4B. The sparse computation output distribution (red) matches the dense one (blue) better with more clusters. Sparsity is set to 90\% for each expert. WD represents the Wasserstein distance between the sparse output distribution and the dense distribution. RI represents relative improvement of Sparse Expansion ($`n \geq 1`$ clusters) over baseline SparseGPT ($`n = 1`$ cluster).*
 
 ## Cite
 If you found our work useful, please cite our paper:
