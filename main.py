@@ -4,6 +4,7 @@ from utils.modelutils import *
 import warnings
 
 
+
 def main():
     parser = args_parser.get_parser()
     args = parser.parse_args()
@@ -24,7 +25,7 @@ def main():
         seqlen=CONTEXT_LENGTH,
         cache_dir=args.cache_dir,
     )
-
+    print("Data loaded successfully!")
     assert len(dataloader) == args.dataset_size, "Dataset size mismatch!"
 
     # check for suitable number of devices for Sparse Expansion
@@ -41,24 +42,45 @@ def main():
         dev = torch.device("cuda:1")
 
     if args.model == "llama":
-        model = get_llama(args.model_size, cache_dir=args.cache_dir)
-        model.seqlen = CONTEXT_LENGTH
-        from llama import llama_sequential
+        if args.finetune:
+            print("Doing finetune")
+            model = get_llama(args.model_size, cache_dir=args.cache_dir)
+            model.seqlen = CONTEXT_LENGTH
+            from llama_finetune import llama_sequential
+            mean_nll, ppl = llama_sequential(
+                model,
+                args.sparsity,
+                args.quantize,
+                args.bits,
+                dataloader,
+                len(dataloader),
+                testloader,
+                dev,
+                args.no_PCA,
+                args.PCA_reduction_factor,
+                args.num_clusters,
+                args.verbose,
+                finetune=True,
+            )
+        else:
+            model = get_llama(args.model_size, cache_dir=args.cache_dir)
+            model.seqlen = CONTEXT_LENGTH
+            from llama import llama_sequential
 
-        mean_nll, ppl = llama_sequential(
-            model,
-            args.sparsity,
-            args.quantize,
-            args.bits,
-            dataloader,
-            len(dataloader),
-            testloader,
-            dev,
-            args.no_PCA,
-            args.PCA_reduction_factor,
-            args.num_clusters,
-            args.verbose,
-        )
+            mean_nll, ppl = llama_sequential(
+                model,
+                args.sparsity,
+                args.quantize,
+                args.bits,
+                dataloader,
+                len(dataloader),
+                testloader,
+                dev,
+                args.no_PCA,
+                args.PCA_reduction_factor,
+                args.num_clusters,
+                args.verbose,
+            )
 
     elif args.model == "pythia":
         model = get_pythia(args.model_size, cache_dir=args.cache_dir)
@@ -79,6 +101,10 @@ def main():
             args.num_clusters,
             args.verbose,
         )
+    
+    # elif args.model == "llama-finetune":
+        
+
 
     print(f"Mean NLL: {mean_nll}, PPL: {ppl}")
 

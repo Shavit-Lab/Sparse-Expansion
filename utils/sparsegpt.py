@@ -14,7 +14,7 @@ torch.backends.cudnn.allow_tf32 = False
 
 class SparseGPT:
 
-    def __init__(self, layer):
+    def __init__(self, layer, finetune=False):
         self.layer = layer
         self.dev = self.layer.weight.device
         W = layer.weight.data.clone()
@@ -26,11 +26,16 @@ class SparseGPT:
         self.columns = W.shape[1]
         self.H = torch.zeros((self.columns, self.columns), device=self.dev)
         self.nsamples = 0
+        self.finetune = finetune
+        self.inputs_for_finetuning = []
+        
 
     def add_batch(self, inp, out, blocksize=1024):
         if DEBUG:
             self.inp1 = inp
             self.out1 = out
+        if self.finetune:
+            self.inputs_for_finetuning.append(inp.clone().detach())
         if len(inp.shape) == 2:
             inp = inp.unsqueeze(0)
         tmp = inp.shape[0]
@@ -44,6 +49,10 @@ class SparseGPT:
         self.nsamples += tmp
         inp = math.sqrt(2 / self.nsamples) * inp.float()
         self.H += inp.matmul(inp.t())
+        
+
+
+
 
     def fasterprune(
         self, sparsity, prunen=0, prunem=0, blocksize=128, percdamp=0.01

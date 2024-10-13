@@ -3,7 +3,8 @@ import numpy as np
 import torch
 from datasets import load_dataset
 from transformers import AutoTokenizer, LlamaTokenizer
-
+import pickle
+import os
 
 def set_seed(seed):
     np.random.seed(seed)
@@ -32,6 +33,14 @@ def get_tokenizer(model_id, cache_dir):
 
 
 def get_wikitext2(nsamples, seed, seqlen, model, tokenizer):
+    path = "/home/shashata/Block-Finetuning-SE/llama_finetuning/Sparse-Expansion/storage"
+
+    if os.path.exists(f"{path}/wikitext2_train_{nsamples}.pkl") and os.path.exists(f"{path}/wikitext2_test.pkl"):
+        with open(f"{path}/wikitext2_train_{nsamples}.pkl", "rb") as f:
+            trainloader = pickle.load(f)
+        with open(f"{path}/wikitext2_test.pkl", "rb") as f:
+            testenc = pickle.load(f)
+            return trainloader, testenc
 
     traindata = load_dataset("wikitext", "wikitext-2-raw-v1", split="train")
     testdata = load_dataset("wikitext", "wikitext-2-raw-v1", split="test")
@@ -48,6 +57,11 @@ def get_wikitext2(nsamples, seed, seqlen, model, tokenizer):
         tar = inp.clone()
         tar[:, :-1] = -100
         trainloader.append((inp, tar))
+
+    with open(f"{path}/wikitext2_train_{nsamples}.pkl", "wb") as f:
+        pickle.dump(trainloader, f)
+    with open(f"{path}/wikitext2_test.pkl", "wb") as f:
+        pickle.dump(testenc, f)
     return trainloader, testenc
 
 
@@ -127,6 +141,8 @@ def get_loaders(
     elif model == "llama" and model_size == "1.1B":
         # use 7b tokenizer because 1.1B doesn't have it's own
         model_id = f"meta-llama/Llama-2-7b-hf"
+        # model_id = f"tinyllama/TinyLlama-1.1B-intermediate-step-1431k-3T"
+
     elif model == "llama":
         model_id = f"meta-llama/Llama-2-{model_size}-hf"
     else:
@@ -134,8 +150,9 @@ def get_loaders(
 
     print(f"Loading model {model_id}")
     tokenizer = get_tokenizer(model_id, cache_dir)
-
+    print("Tokenizer loaded successfully!")
     if "wikitext2" in name:
+        
         return get_wikitext2(nsamples, seed, seqlen, model, tokenizer)
     if "ptb" in name:
         return get_ptb(nsamples, seed, seqlen, model, tokenizer)
