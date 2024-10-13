@@ -19,6 +19,8 @@ class ClusteredLinear(nn.Module):
         self.pca_model = None
         self.num_clusters = num_clusters
         self.batch_counter = 0
+        self.collect = False
+        self.dense_outputs = []
 
     def add_layer(self, layer):
         self.layers.append(layer)
@@ -37,6 +39,10 @@ class ClusteredLinear(nn.Module):
             if not nobatch:
                 Y = Y.unsqueeze(0)
             self.batch_counter += 1
+
+            if self.collect:
+                # print(self.batch_counter)
+                self.dense_outputs.append(Y.detach().cpu().numpy())
             return Y
 
         batch_size = X.shape[0]
@@ -146,7 +152,7 @@ def get_pythia(model_size, cache_dir=None):
 def get_llama(model_size, cache_dir=None):
 
     if model_size == "8B":
-        model_id = "meta-llama/Meta-Llama-3-8B"
+        model_id = "meta-llama/Meta-Llama-3.1-8B"
     elif model_size == "1.1B":
         model_id = "TinyLlama/TinyLlama-1.1B-intermediate-step-1431k-3T"
     else:

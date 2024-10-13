@@ -70,6 +70,12 @@ def get_parser():
     sparse_group.add_argument(
         "-v", "--verbose", action="store_true", help="Print verbose logs"
     )
+    sparse_group.add_argument(
+        "-ft",
+        "--finetune",
+        action="store_true",
+        help="Whether to block finetune the model",
+    )
 
     # Calibration dataset group
     calibration_group = parser.add_argument_group(
