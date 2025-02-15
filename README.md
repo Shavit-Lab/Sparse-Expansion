@@ -1,5 +1,5 @@
-# Sparse Expansion
-Here we include the code for our paper [Sparse Expansion and Neuronal Disentanglement](https://arxiv.org/abs/2405.15756). The code allows for the creation and evaluation of Sparse Expansion models in terms of overall perplexity.
+# [Wasserstein Distances, Neuronal Entanglement, and Sparsity](https://openreview.net/forum?id=cnKhHxN3xj) - ICLR 2025 Spotlight
+Here we include the code for our paper [Wasserstein Distances, Neuronal Entanglement, and Sparsity](https://openreview.net/forum?id=cnKhHxN3xj). The code allows for the creation and evaluation of Sparse Expansion models in terms of overall perplexity.
 
 ![Sparse Expansion process](assets/Sparse_Expansion.png)
 *One-shot expert creation process and inference process of Sparse Expansion in an FFN block.*
