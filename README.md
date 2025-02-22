@@ -62,10 +62,9 @@ python main.py --model llama --model_size 7B --sparsity (2, 4) --quantize --bits
 ## Cite
 If you found our work useful, please cite our paper:
 ```
-@article{sawmya2024sparse,
-  title={Sparse Expansion and Neuronal Disentanglement},
-  author={Sawmya, Shashata and Kong, Linghao and Markov, Ilia and Alistarh, Dan and Shavit, Nir},
-  journal={arXiv preprint arXiv:2405.15756},
-  year={2024}
+@inproceedings{sawmyawasserstein,
+  title={Wasserstein Distances, Neuronal Entanglement, and Sparsity},
+  author={Sawmya, Shashata and Kong, Linghao and Markov, Ilia and Alistarh, Dan and Shavit, Nir N},
+  booktitle={The Thirteenth International Conference on Learning Representations}
 }
 ```
